@@ -1,40 +1,103 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Block World</title>
+  <meta name="theme-color" content="#17152e">
+  <title>Jogo da Forca</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="game">
-    <header>
-      <h1>🌍 BLOCK WORLD</h1>
-      <div class="status">
-        <span id="day">☀️ Dia 1</span>
-        <span id="health">❤️ 100</span>
-        <span id="message">Explore o mundo!</span>
+
+  <main class="container">
+    <header class="header">
+      <div class="logo">🔤</div>
+      <div>
+        <h1>JOGO DA FORCA</h1>
+        <p>Descubra a palavra antes que suas tentativas acabem!</p>
       </div>
     </header>
 
-    <main>
-      <canvas id="canvas"></canvas>
-
-      <div id="hotbar"></div>
-
-      <div id="help">
-        A/D ou ←/→: andar | W ou Espaço: pular<br>
-        Clique: minerar | Botão direito: construir<br>
-        1–6: selecionar bloco
+    <section class="game-card">
+      <div class="top-info">
+        <div class="info-box">
+          <span>⭐ Pontuação</span>
+          <strong id="score">0</strong>
+        </div>
+        <div class="info-box">
+          <span>🏆 Recorde</span>
+          <strong id="record">0</strong>
+        </div>
+        <div class="info-box">
+          <span>❤️ Vidas</span>
+          <strong id="lives">6</strong>
+        </div>
       </div>
-    </main>
 
-    <div id="inventory">
-      <h2>🎒 Inventário</h2>
-      <div id="items"></div>
-      <button id="craft">🪓 Criar picareta (3 madeira + 2 pedra)</button>
-    </div>
-  </div>
+      <div class="settings">
+        <label for="difficulty">Nível de dificuldade:</label>
+        <select id="difficulty">
+          <option value="easy">Fácil</option>
+          <option value="medium">Médio</option>
+          <option value="hard">Difícil</option>
+        </select>
+
+        <label for="category">Tema:</label>
+        <select id="category">
+          <option value="all">Todos os temas</option>
+          <option value="animals">Animais</option>
+          <option value="science">Ciências</option>
+          <option value="geography">Geografia</option>
+          <option value="technology">Tecnologia</option>
+          <option value="food">Alimentos</option>
+        </select>
+      </div>
+
+      <div class="level-description" id="levelDescription">
+        Nível fácil: palavras curtas e mais tentativas.
+      </div>
+
+      <div class="game-area">
+        <div class="drawing-area">
+          <svg id="hangman" viewBox="0 0 220 220" aria-label="Desenho da forca">
+            <line x1="25" y1="200" x2="155" y2="200" class="gallows"/>
+            <line x1="55" y1="200" x2="55" y2="20" class="gallows"/>
+            <line x1="55" y1="20" x2="150" y2="20" class="gallows"/>
+            <line x1="150" y1="20" x2="150" y2="45" class="gallows"/>
+            <circle id="head" cx="150" cy="65" r="20" class="body-part"/>
+            <line id="body" x1="150" y1="85" x2="150" y2="140" class="body-part"/>
+            <line id="leftArm" x1="150" y1="100" x2="120" y2="125" class="body-part"/>
+            <line id="rightArm" x1="150" y1="100" x2="180" y2="125" class="body-part"/>
+            <line id="leftLeg" x1="150" y1="140" x2="125" y2="175" class="body-part"/>
+            <line id="rightLeg" x1="150" y1="140" x2="175" y2="175" class="body-part"/>
+          </svg>
+        </div>
+
+        <div class="word-area">
+          <p class="category-label" id="categoryLabel">TEMA: ANIMAIS</p>
+          <div class="word" id="word" aria-label="Palavra a descobrir"></div>
+          <p class="hint" id="hint">Clique em uma letra para começar!</p>
+          <button class="hint-button" id="hintButton">💡 Mostrar dica</button>
+        </div>
+      </div>
+
+      <div class="message" id="message" role="status">
+        Escolha uma letra!
+      </div>
+
+      <div class="keyboard" id="keyboard" aria-label="Teclado de letras"></div>
+
+      <div class="actions">
+        <button class="new-game" id="newGame">🔄 Novo jogo</button>
+        <button class="reveal-button" id="revealButton">👁 Revelar palavra</button>
+      </div>
+    </section>
+
+    <footer>
+      <p>Desenvolvido com HTML, CSS e JavaScript</p>
+    </footer>
+  </main>
 
   <script src="script.js"></script>
 </body>
