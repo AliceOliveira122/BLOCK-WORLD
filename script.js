@@ -1,717 +1,491 @@
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
 
-const TILE = 32;
-const WORLD_W = 140;
-const WORLD_H = 35;
+'use strict';
 
-canvas.width = 960;
-canvas.height = 540;
+/* ==========================================
+   JOGO DA FORCA - SISTEMA PRINCIPAL
+========================================== */
 
-const blocks = {
-  air:    { color: null, name: "Ar", emoji: " " },
-  grass:  { color: "#55a630", name: "Grama", emoji: "🌱" },
-  dirt:   { color: "#9c6644", name: "Terra", emoji: "🟫" },
-  stone:  { color: "#777777", name: "Pedra", emoji: "🪨" },
-  wood:   { color: "#925b2e", name: "Madeira", emoji: "🪵" },
-  leaves: { color: "#238636", name: "Folhas", emoji: "🌳" },
-  sand:   { color: "#e9d8a6", name: "Areia", emoji: "🏖️" },
-  water:  { color: "#2589d8", name: "Água", emoji: "💧" }
+const words = {
+  animals: {
+    easy: [
+      { word: 'GATO', hint: 'Animal doméstico que gosta de dormir.' },
+      { word: 'PATO', hint: 'Ave que gosta de nadar.' },
+      { word: 'LEAO', hint: 'Conhecido como o rei da selva.' },
+      { word: 'RATO', hint: 'Pequeno roedor.' },
+      { word: 'URSO', hint: 'Animal grande que pode hibernar.' }
+    ],
+    medium: [
+      { word: 'GIRAFA', hint: 'Animal de pescoço muito comprido.' },
+      { word: 'COELHO', hint: 'Animal conhecido pelas orelhas compridas.' },
+      { word: 'TARTARUGA', hint: 'Animal que possui um casco.' },
+      { word: 'GOLFINHO', hint: 'Mamífero que vive no mar.' }
+    ],
+    hard: [
+      { word: 'ORNITORRINCO', hint: 'Mamífero que põe ovos e possui bico.' },
+      { word: 'CAMALEAO', hint: 'Réptil que pode mudar de cor.' },
+      { word: 'HIPOPOTAMO', hint: 'Grande mamífero que vive próximo à água.' },
+      { word: 'CHIMPANZE', hint: 'Primata muito inteligente.' }
+    ]
+  },
+
+  science: {
+    easy: [
+      { word: 'AGUA', hint: 'Substância essencial para a vida.' },
+      { word: 'ATOMO', hint: 'Unidade básica da matéria.' },
+      { word: 'LUZ', hint: 'Permite enxergar os objetos.' },
+      { word: 'AR', hint: 'Mistura de gases que respiramos.' }
+    ],
+    medium: [
+      { word: 'CELULA', hint: 'Unidade básica dos seres vivos.' },
+      { word: 'PLANETA', hint: 'Corpo celeste que orbita uma estrela.' },
+      { word: 'OXIGENIO', hint: 'Elemento químico importante para a respiração.' },
+      { word: 'MOLECULA', hint: 'Conjunto de átomos ligados.' }
+    ],
+    hard: [
+      { word: 'FOTOSSINTESE', hint: 'Processo pelo qual plantas produzem seu alimento.' },
+      { word: 'GRAVIDADE', hint: 'Força que atrai os corpos.' },
+      { word: 'ELETRON', hint: 'Partícula de carga elétrica negativa.' },
+      { word: 'EVAPORACAO', hint: 'Passagem do estado líquido para o gasoso.' }
+    ]
+  },
+
+  geography: {
+    easy: [
+      { word: 'BRASIL', hint: 'País onde vivemos.' },
+      { word: 'MAPA', hint: 'Representação de um espaço geográfico.' },
+      { word: 'RIO', hint: 'Curso natural de água.' },
+      { word: 'ILHA', hint: 'Porção de terra cercada por água.' }
+    ],
+    medium: [
+      { word: 'CONTINENTE', hint: 'Grande extensão de terras emersas.' },
+      { word: 'OCEANO', hint: 'Grande massa de água salgada.' },
+      { word: 'EQUADOR', hint: 'Linha imaginária que divide a Terra em dois hemisférios.' },
+      { word: 'CAPITAL', hint: 'Cidade onde geralmente fica o governo de um país.' }
+    ],
+    hard: [
+      { word: 'ARQUIPÉLAGO', hint: 'Conjunto de ilhas.' },
+      { word: 'HEMISFERIO', hint: 'Metade de uma esfera, como a Terra.' },
+      { word: 'CORDILHEIRA', hint: 'Conjunto de montanhas.' },
+      { word: 'MERIDIANO', hint: 'Linha imaginária usada para medir longitudes.' }
+    ]
+  },
+
+  technology: {
+    easy: [
+      { word: 'MOUSE', hint: 'Acessório usado para controlar o cursor.' },
+      { word: 'TELA', hint: 'Parte do computador onde aparecem as imagens.' },
+      { word: 'SITE', hint: 'Página ou conjunto de páginas na internet.' },
+      { word: 'DADO', hint: 'Informação que pode ser armazenada.' }
+    ],
+    medium: [
+      { word: 'INTERNET', hint: 'Rede mundial de computadores.' },
+      { word: 'TECLADO', hint: 'Dispositivo usado para digitar.' },
+      { word: 'ROBOTICA', hint: 'Área que estuda e desenvolve robôs.' },
+      { word: 'SENHA', hint: 'Código usado para proteger uma conta.' }
+    ],
+    hard: [
+      { word: 'ALGORITMO', hint: 'Sequência de instruções para resolver um problema.' },
+      { word: 'PROCESSADOR', hint: 'Componente responsável por executar instruções.' },
+      { word: 'PROGRAMACAO', hint: 'Criação de instruções para computadores.' },
+      { word: 'CIBERSEGURANCA', hint: 'Proteção de sistemas e dados digitais.' }
+    ]
+  },
+
+  food: {
+    easy: [
+      { word: 'BOLO', hint: 'Doce muito comum em aniversários.' },
+      { word: 'PIZZA', hint: 'Prato geralmente redondo com cobertura.' },
+      { word: 'UVA', hint: 'Fruta pequena que cresce em cachos.' },
+      { word: 'ARROZ', hint: 'Alimento muito consumido no Brasil.' }
+    ],
+    medium: [
+      { word: 'LASANHA', hint: 'Prato feito com camadas de massa.' },
+      { word: 'ABACAXI', hint: 'Fruta tropical com casca espinhosa.' },
+      { word: 'MORANGO', hint: 'Fruta vermelha com pequenas sementes.' },
+      { word: 'PANQUECA', hint: 'Massa fina que pode ter recheio.' }
+    ],
+    hard: [
+      { word: 'ESCONDIDINHO', hint: 'Prato com recheio coberto por purê.' },
+      { word: 'BRUSCHETTA', hint: 'Entrada italiana feita com pão.' },
+      { word: 'RATATOUILLE', hint: 'Prato francês preparado com legumes.' },
+      { word: 'CARBONARA', hint: 'Molho italiano tradicional para massas.' }
+    ]
+  }
 };
 
-const world = [];
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-const inventory = {
-  dirt: 10,
-  stone: 0,
-  wood: 0,
-  leaves: 0,
-  sand: 0
+const difficultySettings = {
+  easy: {
+    lives: 6,
+    description: 'Fácil: palavras curtas e 6 tentativas.',
+    points: 10
+  },
+  medium: {
+    lives: 6,
+    description: 'Médio: palavras maiores e 6 tentativas.',
+    points: 20
+  },
+  hard: {
+    lives: 6,
+    description: 'Difícil: palavras desafiadoras e 6 tentativas.',
+    points: 35
+  }
 };
 
-const itemTypes = ["dirt", "stone", "wood", "leaves", "sand"];
+/* ==========================================
+   ELEMENTOS E VARIÁVEIS
+========================================== */
 
-let selected = 0;
-let cameraX = 0;
-let cameraY = 0;
-let day = 1;
-let time = 0;
-let health = 100;
-let hasPickaxe = false;
-let messageTimer = 0;
-let enemies = [];
-let particles = [];
-let lastTime = 0;
+const $ = id => document.getElementById(id);
 
-const keys = {};
+const difficultySelect = $('difficulty');
+const categorySelect = $('category');
+const keyboard = $('keyboard');
+const wordElement = $('word');
+const hintElement = $('hint');
+const messageElement = $('message');
 
-const player = {
-  x: 150,
-  y: 100,
-  w: 22,
-  h: 42,
-  vx: 0,
-  vy: 0,
-  speed: 3.5,
-  jump: 10,
-  grounded: false,
-  facing: 1,
-  invulnerable: 0
+const bodyParts = [
+  'head',
+  'body',
+  'leftArm',
+  'rightArm',
+  'leftLeg',
+  'rightLeg'
+];
+
+let currentWord = '';
+let currentHint = '';
+let currentCategory = '';
+let guessedLetters = [];
+let wrongAttempts = 0;
+let maxLives = 6;
+let score = 0;
+let record = 0;
+let gameFinished = false;
+let hintUsed = false;
+
+const categoryNames = {
+  all: 'TODOS OS TEMAS',
+  animals: 'ANIMAIS',
+  science: 'CIÊNCIAS',
+  geography: 'GEOGRAFIA',
+  technology: 'TECNOLOGIA',
+  food: 'ALIMENTOS'
 };
 
-function showMessage(text) {
-  document.getElementById("message").textContent = text;
-  messageTimer = 2;
+const difficultyNames = {
+  easy: 'Fácil',
+  medium: 'Médio',
+  hard: 'Difícil'
+};
+
+/* ==========================================
+   SALVAMENTO DO RECORDE
+========================================== */
+
+function loadRecord() {
+  try {
+    record = Number(localStorage.getItem('forcaRecord')) || 0;
+  } catch (_) {
+    record = 0;
+  }
+  $('record').textContent = record;
 }
 
-function random(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-// GERAÇÃO DO MUNDO
-
-function generateWorld() {
-  let ground = 15;
-
-  for (let x = 0; x < WORLD_W; x++) {
-    ground += random(-1, 1);
-    ground = Math.max(12, Math.min(18, ground));
-
-    world[x] = [];
-
-    for (let y = 0; y < WORLD_H; y++) {
-      if (y < ground) {
-        world[x][y] = "air";
-      } else if (y === ground) {
-        world[x][y] = "grass";
-      } else if (y < ground + 4) {
-        world[x][y] = "dirt";
-      } else {
-        world[x][y] = "stone";
-      }
+function saveRecord() {
+  if (score > record) {
+    record = score;
+    try {
+      localStorage.setItem('forcaRecord', String(record));
+    } catch (_) {
+      // O jogo continua funcionando sem armazenamento.
     }
   }
-
-  // Árvores
-  for (let x = 5; x < WORLD_W - 5; x++) {
-    if (Math.random() < 0.09) {
-      const groundY = findGround(x);
-      const height = random(3, 5);
-
-      for (let i = 1; i <= height; i++) {
-        if (groundY - i >= 0) {
-          world[x][groundY - i] = "wood";
-        }
-      }
-
-      for (let dx = -2; dx <= 2; dx++) {
-        for (let dy = -2; dy <= 1; dy++) {
-          const tx = x + dx;
-          const ty = groundY - height + dy;
-
-          if (
-            tx >= 0 && tx < WORLD_W &&
-            ty >= 0 && ty < WORLD_H &&
-            world[tx][ty] === "air" &&
-            Math.random() > 0.15
-          ) {
-            world[tx][ty] = "leaves";
-          }
-        }
-      }
-    }
-  }
-
-  // Pequenas áreas de areia
-  for (let x = 25; x < WORLD_W - 5; x += random(15, 25)) {
-    const groundY = findGround(x);
-
-    for (let dx = 0; dx < 4; dx++) {
-      if (world[x + dx]) {
-        world[x + dx][groundY] = "sand";
-      }
-    }
-  }
+  $('record').textContent = record;
 }
 
-function findGround(x) {
-  for (let y = 0; y < WORLD_H; y++) {
-    if (world[x][y] !== "air") return y;
-  }
-  return WORLD_H - 1;
+/* ==========================================
+   ESCOLHA DE PALAVRAS
+========================================== */
+
+function normalizeWord(word) {
+  return word.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
 }
 
-generateWorld();
-
-// CONTROLES
-
-document.addEventListener("keydown", e => {
-  keys[e.key.toLowerCase()] = true;
-
-  if (
-    ["arrowup", "arrowdown", "arrowleft", "arrowright", " "]
-      .includes(e.key.toLowerCase())
-  ) {
-    e.preventDefault();
+function getAvailableWords(category, difficulty) {
+  if (category !== 'all') {
+    return words[category][difficulty].map(item => ({
+      ...item,
+      category
+    }));
   }
 
-  if (
-    (e.key.toLowerCase() === "w" ||
-     e.key === "ArrowUp" ||
-     e.code === "Space") &&
-    player.grounded
-  ) {
-    player.vy = -player.jump;
-    player.grounded = false;
-  }
+  const available = [];
 
-  if (e.key >= "1" && e.key <= "6") {
-    selected = Number(e.key) - 1;
-    updateUI();
-  }
-});
-
-document.addEventListener("keyup", e => {
-  keys[e.key.toLowerCase()] = false;
-});
-
-canvas.addEventListener("contextmenu", e => e.preventDefault());
-
-function getMouseTile(e) {
-  const rect = canvas.getBoundingClientRect();
-
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
-
-  const mx = (e.clientX - rect.left) * scaleX;
-  const my = (e.clientY - rect.top) * scaleY;
-
-  return {
-    x: Math.floor((mx + cameraX) / TILE),
-    y: Math.floor((my + cameraY) / TILE)
-  };
-}
-
-canvas.addEventListener("mousedown", e => {
-  const tile = getMouseTile(e);
-
-  if (!insideWorld(tile.x, tile.y)) return;
-
-  if (e.button === 0) {
-    mineBlock(tile.x, tile.y);
-  }
-
-  if (e.button === 2) {
-    placeBlock(tile.x, tile.y);
-  }
-});
-
-function insideWorld(x, y) {
-  return (
-    x >= 0 && x < WORLD_W &&
-    y >= 0 && y < WORLD_H
-  );
-}
-
-// MINERAÇÃO
-
-function mineBlock(x, y) {
-  const type = world[x][y];
-
-  if (type === "air") return;
-
-  const distance = Math.hypot(
-    x * TILE + TILE / 2 - (player.x + player.w / 2),
-    y * TILE + TILE / 2 - (player.y + player.h / 2)
-  );
-
-  if (distance > TILE * 5) {
-    showMessage("Muito longe para minerar!");
-    return;
-  }
-
-  if (type === "stone" && !hasPickaxe) {
-    showMessage("Você precisa criar uma picareta!");
-    return;
-  }
-
-  world[x][y] = "air";
-
-  if (inventory[type] !== undefined) {
-    inventory[type]++;
-  }
-
-  for (let i = 0; i < 5; i++) {
-    particles.push({
-      x: x * TILE + TILE / 2,
-      y: y * TILE + TILE / 2,
-      vx: random(-3, 3),
-      vy: random(-4, 1),
-      life: 0.5,
-      color: blocks[type].color
+  Object.keys(words).forEach(theme => {
+    words[theme][difficulty].forEach(item => {
+      available.push({
+        ...item,
+        category: theme
+      });
     });
-  }
+  });
 
-  updateUI();
+  return available;
 }
 
-// CONSTRUÇÃO
+function chooseWord() {
+  const difficulty = difficultySelect.value;
+  const category = categorySelect.value;
+  const available = getAvailableWords(category, difficulty);
 
-function placeBlock(x, y) {
-  const type = itemTypes[selected];
+  const selected = available[Math.floor(Math.random() * available.length)];
 
-  if (!insideWorld(x, y)) return;
-
-  const distance = Math.hypot(
-    x * TILE + TILE / 2 - (player.x + player.w / 2),
-    y * TILE + TILE / 2 - (player.y + player.h / 2)
-  );
-
-  if (distance > TILE * 5) {
-    showMessage("Muito longe para construir!");
-    return;
-  }
-
-  if (world[x][y] !== "air") return;
-
-  if (inventory[type] <= 0) {
-    showMessage("Você não tem esse bloco!");
-    return;
-  }
-
-  const blockRect = {
-    x: x * TILE,
-    y: y * TILE,
-    w: TILE,
-    h: TILE
-  };
-
-  if (rectCollision(blockRect, player)) {
-    showMessage("Não pode construir em cima de você!");
-    return;
-  }
-
-  world[x][y] = type;
-  inventory[type]--;
-
-  updateUI();
+  currentWord = normalizeWord(selected.word);
+  currentHint = selected.hint;
+  currentCategory = selected.category;
 }
 
-function rectCollision(a, b) {
-  return (
-    a.x < b.x + b.w &&
-    a.x + a.w > b.x &&
-    a.y < b.y + b.h &&
-    a.y + a.h > b.y
-  );
+/* ==========================================
+   INICIAR JOGO
+========================================== */
+
+function newGame() {
+  chooseWord();
+
+  guessedLetters = [];
+  wrongAttempts = 0;
+  gameFinished = false;
+  hintUsed = false;
+
+  maxLives = difficultySettings[difficultySelect.value].lives;
+
+  resetDrawing();
+  createKeyboard();
+  renderWord();
+
+  $('lives').textContent = maxLives;
+  $('categoryLabel').textContent = `TEMA: ${categoryNames[currentCategory]}`;
+  $('levelDescription').textContent =
+    difficultySettings[difficultySelect.value].description;
+
+  hintElement.textContent = 'Clique em uma letra para começar!';
+  $('hintButton').disabled = false;
+
+  messageElement.textContent = 'Escolha uma letra!';
+  messageElement.className = 'message';
+
+  $('revealButton').disabled = false;
 }
 
-// COLISÃO
-
-function isSolid(x, y) {
-  if (!insideWorld(x, y)) return false;
-
-  return !["air", "water", "leaves"].includes(world[x][y]);
+function resetDrawing() {
+  bodyParts.forEach(id => {
+    $(id).style.display = 'none';
+  });
 }
 
-function collides(x, y, w, h) {
-  const left = Math.floor(x / TILE);
-  const right = Math.floor((x + w - 1) / TILE);
-  const top = Math.floor(y / TILE);
-  const bottom = Math.floor((y + h - 1) / TILE);
+function createKeyboard() {
+  keyboard.replaceChildren();
 
-  for (let tx = left; tx <= right; tx++) {
-    for (let ty = top; ty <= bottom; ty++) {
-      if (isSolid(tx, ty)) return true;
+  alphabet.forEach(letter => {
+    const button = document.createElement('button');
+
+    button.type = 'button';
+    button.className = 'key';
+    button.textContent = letter;
+    button.setAttribute('aria-label', `Letra ${letter}`);
+
+    button.addEventListener('click', () => guessLetter(letter));
+
+    keyboard.appendChild(button);
+  });
+}
+
+/* ==========================================
+   EXIBIR A PALAVRA
+========================================== */
+
+function renderWord() {
+  wordElement.replaceChildren();
+
+  currentWord.split('').forEach(letter => {
+    const slot = document.createElement('div');
+    slot.className = 'letter-slot';
+
+    if (guessedLetters.includes(letter) || gameFinished) {
+      slot.textContent = letter;
+    } else {
+      slot.textContent = '';
     }
-  }
 
-  return false;
+    wordElement.appendChild(slot);
+  });
 }
 
-// PICARETA
+function updateLives() {
+  const remaining = maxLives - wrongAttempts;
+  $('lives').textContent = remaining;
+}
 
-document.getElementById("craft").addEventListener("click", () => {
-  if (hasPickaxe) {
-    showMessage("Você já possui uma picareta!");
+/* ==========================================
+   TENTAR UMA LETRA
+========================================== */
+
+function guessLetter(letter) {
+  if (gameFinished || guessedLetters.includes(letter)) return;
+
+  guessedLetters.push(letter);
+
+  const button = [...keyboard.children].find(
+    item => item.textContent === letter
+  );
+
+  const correct = currentWord.includes(letter);
+
+  if (button) {
+    button.disabled = true;
+    button.classList.add(correct ? 'correct' : 'wrong');
+  }
+
+  if (correct) {
+    messageElement.textContent = 'Muito bem! Você encontrou uma letra!';
+    messageElement.className = 'message success';
+  } else {
+    wrongAttempts++;
+    bodyParts[wrongAttempts - 1] &&
+      ($(bodyParts[wrongAttempts - 1]).style.display = 'block');
+
+    messageElement.textContent = 'Ops! Essa letra não está na palavra.';
+    messageElement.className = 'message error';
+  }
+
+  renderWord();
+  updateLives();
+  checkGame();
+}
+
+/* ==========================================
+   VERIFICAR VITÓRIA OU DERROTA
+========================================== */
+
+function checkGame() {
+  const won = currentWord.split('').every(letter =>
+    guessedLetters.includes(letter)
+  );
+
+  if (won) {
+    finishGame(true);
     return;
   }
 
-  if (inventory.wood >= 3 && inventory.stone >= 2) {
-    inventory.wood -= 3;
-    inventory.stone -= 2;
-    hasPickaxe = true;
+  if (wrongAttempts >= maxLives) {
+    finishGame(false);
+  }
+}
 
-    showMessage("⛏️ Picareta criada!");
-    updateUI();
+function finishGame(won) {
+  if (gameFinished) return;
+
+  gameFinished = true;
+
+  [...keyboard.children].forEach(button => {
+    button.disabled = true;
+  });
+
+  $('hintButton').disabled = true;
+  $('revealButton').disabled = true;
+
+  renderWord();
+
+  if (won) {
+    const points = difficultySettings[difficultySelect.value].points;
+    const bonus = Math.max(0, maxLives - wrongAttempts) * 2;
+    const total = points + bonus + (hintUsed ? 0 : 5);
+
+    score += total;
+
+    messageElement.textContent =
+      `🎉 PARABÉNS! Você acertou e ganhou ${total} pontos!`;
+
+    messageElement.className = 'message success';
   } else {
-    showMessage("Você precisa de 3 madeiras e 2 pedras!");
+    messageElement.textContent =
+      `😢 Fim de jogo! A palavra era: ${currentWord}`;
+
+    messageElement.className = 'message error';
+  }
+
+  $('score').textContent = score;
+  saveRecord();
+}
+
+/* ==========================================
+   SISTEMA DE DICAS
+========================================== */
+
+$('hintButton').addEventListener('click', () => {
+  if (gameFinished || hintUsed) return;
+
+  hintElement.textContent = `💡 Dica: ${currentHint}`;
+  hintUsed = true;
+
+  $('hintButton').disabled = true;
+
+  messageElement.textContent = 'Dica revelada! Boa sorte!';
+  messageElement.className = 'message';
+});
+
+/* ==========================================
+   REVELAR PALAVRA
+========================================== */
+
+$('revealButton').addEventListener('click', () => {
+  if (gameFinished) return;
+
+  gameFinished = true;
+  renderWord();
+
+  [...keyboard.children].forEach(button => {
+    button.disabled = true;
+  });
+
+  $('hintButton').disabled = true;
+  $('revealButton').disabled = true;
+
+  messageElement.textContent = `A palavra era: ${currentWord}`;
+  messageElement.className = 'message error';
+});
+
+/* ==========================================
+   TECLADO FÍSICO
+========================================== */
+
+document.addEventListener('keydown', event => {
+  const letter = event.key.toUpperCase();
+
+  if (/^[A-Z]$/.test(letter)) {
+    guessLetter(letter);
+  }
+
+  if (event.key === 'Enter' && gameFinished) {
+    newGame();
   }
 });
 
-// CRIATURAS
+/* ==========================================
+   BOTÕES E CONFIGURAÇÕES
+========================================== */
 
-function spawnEnemy() {
-  const x = Math.random() < 0.5
-    ? cameraX / TILE - 3
-    : cameraX / TILE + 33;
+$('newGame').addEventListener('click', newGame);
 
-  const safeX = Math.max(1, Math.min(WORLD_W - 2, Math.floor(x)));
-  const groundY = findGround(safeX);
+difficultySelect.addEventListener('change', newGame);
+categorySelect.addEventListener('change', newGame);
 
-  enemies.push({
-    x: safeX * TILE,
-    y: groundY * TILE - 28,
-    w: 24,
-    h: 28,
-    speed: 0.7
-  });
-}
+/* ==========================================
+   INICIALIZAÇÃO
+========================================== */
 
-function updateEnemies(dt) {
-  for (const enemy of enemies) {
-    const direction = Math.sign(
-      player.x - enemy.x
-    );
-
-    enemy.x += direction * enemy.speed * dt * 60;
-
-    if (rectCollision(enemy, player) && player.invulnerable <= 0) {
-      health = Math.max(0, health - 10);
-      player.invulnerable = 1.2;
-      showMessage("Uma criatura te encontrou!");
-      updateUI();
-    }
-  }
-
-  enemies = enemies.filter(e =>
-    e.x > cameraX - 100 &&
-    e.x < cameraX + canvas.width + 100
-  );
-
-  if (health <= 0) {
-    showMessage("Você ficou sem vida! Recarregue a página.");
-    player.vx = 0;
-    player.vy = 0;
-  }
-}
-
-// ATUALIZAÇÃO
-
-function update(dt) {
-  if (health <= 0) return;
-
-  const left = keys["a"] || keys["arrowleft"];
-  const right = keys["d"] || keys["arrowright"];
-
-  player.vx = 0;
-
-  if (left) {
-    player.vx = -player.speed;
-    player.facing = -1;
-  }
-
-  if (right) {
-    player.vx = player.speed;
-    player.facing = 1;
-  }
-
-  const nextX = player.x + player.vx * dt * 60;
-
-  if (!collides(nextX, player.y, player.w, player.h)) {
-    player.x = nextX;
-  }
-
-  player.vy += 0.45 * dt * 60;
-  player.vy = Math.min(player.vy, 12);
-
-  const nextY = player.y + player.vy * dt * 60;
-
-  if (!collides(player.x, nextY, player.w, player.h)) {
-    player.y = nextY;
-    player.grounded = false;
-  } else {
-    if (player.vy > 0) player.grounded = true;
-    player.vy = 0;
-  }
-
-  player.invulnerable = Math.max(0, player.invulnerable - dt);
-
-  cameraX = Math.max(
-    0,
-    Math.min(
-      WORLD_W * TILE - canvas.width,
-      player.x - canvas.width / 2
-    )
-  );
-
-  cameraY = Math.max(
-    0,
-    Math.min(
-      WORLD_H * TILE - canvas.height,
-      player.y - canvas.height / 2
-    )
-  );
-
-  time += dt;
-
-  if (time >= 60) {
-    time = 0;
-    day++;
-    showMessage("☀️ Um novo dia começou!");
-    document.getElementById("day").textContent = `☀️ Dia ${day}`;
-  }
-
-  const isNight = time > 35;
-
-  if (isNight && enemies.length < 5 && Math.random() < 0.02) {
-    spawnEnemy();
-  }
-
-  if (!isNight) {
-    enemies = [];
-  }
-
-  updateEnemies(dt);
-
-  particles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-    p.life -= dt;
-  });
-
-  particles = particles.filter(p => p.life > 0);
-
-  if (messageTimer > 0) {
-    messageTimer -= dt;
-
-    if (messageTimer <= 0) {
-      document.getElementById("message").textContent = "Explore o mundo!";
-    }
-  }
-}
-
-// DESENHO DO MUNDO
-
-function drawWorld() {
-  const startX = Math.max(0, Math.floor(cameraX / TILE));
-  const endX = Math.min(
-    WORLD_W,
-    Math.ceil((cameraX + canvas.width) / TILE)
-  );
-
-  const startY = Math.max(0, Math.floor(cameraY / TILE));
-  const endY = Math.min(
-    WORLD_H,
-    Math.ceil((cameraY + canvas.height) / TILE)
-  );
-
-  for (let x = startX; x < endX; x++) {
-    for (let y = startY; y < endY; y++) {
-      const type = world[x][y];
-
-      if (type === "air") continue;
-
-      const sx = x * TILE - cameraX;
-      const sy = y * TILE - cameraY;
-
-      ctx.fillStyle = blocks[type].color;
-      ctx.fillRect(sx, sy, TILE, TILE);
-
-      ctx.strokeStyle = "rgba(0,0,0,0.12)";
-      ctx.strokeRect(sx, sy, TILE, TILE);
-
-      if (type === "grass") {
-        ctx.fillStyle = "#83d65a";
-        ctx.fillRect(sx, sy, TILE, 5);
-      }
-
-      if (type === "stone") {
-        ctx.fillStyle = "#999";
-        ctx.fillRect(sx + 6, sy + 7, 6, 5);
-        ctx.fillRect(sx + 20, sy + 19, 5, 6);
-      }
-
-      if (type === "wood") {
-        ctx.fillStyle = "#b07840";
-        ctx.fillRect(sx + 8, sy, 4, TILE);
-      }
-
-      if (type === "leaves") {
-        ctx.fillStyle = "#3ca34a";
-        ctx.fillRect(sx + 5, sy + 5, 8, 8);
-      }
-    }
-  }
-}
-
-// DESENHO DO PERSONAGEM
-
-function drawPlayer() {
-  const x = player.x - cameraX;
-  const y = player.y - cameraY;
-
-  ctx.save();
-
-  if (player.invulnerable > 0 && Math.floor(performance.now() / 100) % 2 === 0) {
-    ctx.globalAlpha = 0.4;
-  }
-
-  // Cabeça
-  ctx.fillStyle = "#f0c49b";
-  ctx.fillRect(x + 3, y, 17, 16);
-
-  // Cabelo
-  ctx.fillStyle = "#4b2e1e";
-  ctx.fillRect(x + 3, y, 17, 5);
-
-  // Olhos
-  ctx.fillStyle = "#111";
-  ctx.fillRect(x + (player.facing === 1 ? 14 : 6), y + 8, 3, 3);
-
-  // Corpo
-  ctx.fillStyle = "#2563eb";
-  ctx.fillRect(x + 2, y + 16, 19, 15);
-
-  // Pernas
-  ctx.fillStyle = "#374151";
-  ctx.fillRect(x + 3, y + 31, 7, 11);
-  ctx.fillRect(x + 13, y + 31, 7, 11);
-
-  ctx.restore();
-}
-
-function drawEnemies() {
-  for (const enemy of enemies) {
-    const x = enemy.x - cameraX;
-    const y = enemy.y - cameraY;
-
-    ctx.fillStyle = "#7f1d1d";
-    ctx.fillRect(x, y, enemy.w, enemy.h);
-
-    ctx.fillStyle = "#ef4444";
-    ctx.fillRect(x + 3, y + 3, 18, 12);
-
-    ctx.fillStyle = "white";
-    ctx.fillRect(x + 5, y + 7, 4, 4);
-    ctx.fillRect(x + 15, y + 7, 4, 4);
-
-    ctx.fillStyle = "black";
-    ctx.fillRect(x + 6, y + 8, 2, 2);
-    ctx.fillRect(x + 16, y + 8, 2, 2);
-  }
-}
-
-function drawParticles() {
-  for (const p of particles) {
-    ctx.globalAlpha = Math.max(0, p.life * 2);
-    ctx.fillStyle = p.color;
-    ctx.fillRect(p.x - cameraX, p.y - cameraY, 5, 5);
-  }
-
-  ctx.globalAlpha = 1;
-}
-
-// CÉU E CICLO DIA/NOITE
-
-function drawSky() {
-  const night = time > 35;
-
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-
-  if (night) {
-    gradient.addColorStop(0, "#101b42");
-    gradient.addColorStop(1, "#34436a");
-  } else {
-    gradient.addColorStop(0, "#38a9f5");
-    gradient.addColorStop(1, "#a5e2ff");
-  }
-
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  if (night) {
-    ctx.fillStyle = "#fff5c2";
-
-    for (let i = 0; i < 45; i++) {
-      const sx = (i * 173) % canvas.width;
-      const sy = (i * 83) % 220;
-
-      ctx.fillRect(sx, sy, 2, 2);
-    }
-
-    ctx.fillStyle = "#fef3c7";
-    ctx.beginPath();
-    ctx.arc(800, 90, 27, 0, Math.PI * 2);
-    ctx.fill();
-  } else {
-    ctx.fillStyle = "#fde047";
-    ctx.beginPath();
-    ctx.arc(800, 90, 32, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-// INTERFACE
-
-function updateUI() {
-  document.getElementById("health").textContent =
-    `❤️ ${health}`;
-
-  const hotbar = document.getElementById("hotbar");
-  hotbar.innerHTML = "";
-
-  itemTypes.forEach((type, index) => {
-    const slot = document.createElement("div");
-
-    slot.className = "slot" +
-      (selected === index ? " selected" : "");
-
-    slot.innerHTML = `
-      <div>${index + 1} ${blocks[type].emoji}</div>
-      <strong>${inventory[type]}</strong>
-    `;
-
-    slot.addEventListener("click", () => {
-      selected = index;
-      updateUI();
-    });
-
-    hotbar.appendChild(slot);
-  });
-
-  const items = document.getElementById("items");
-  items.innerHTML = "";
-
-  itemTypes.forEach(type => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.textContent =
-      `${blocks[type].emoji} ${blocks[type].name}: ${inventory[type]}`;
-
-    items.appendChild(div);
-  });
-}
-
-// LOOP PRINCIPAL
-
-function draw() {
-  drawSky();
-  drawWorld();
-  drawParticles();
-  drawEnemies();
-  drawPlayer();
-}
-
-function loop(timestamp) {
-  const dt = Math.min((timestamp - lastTime) / 1000 || 0, 0.05);
-  lastTime = timestamp;
-
-  update(dt);
-  draw();
-
-  requestAnimationFrame(loop);
-}
-
-updateUI();
-requestAnimationFrame(loop);
+loadRecord();
+newGame();
