@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block World</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game">
+    <header>
+      <h1>🌍 BLOCK WORLD</h1>
+      <div class="status">
+        <span id="day">☀️ Dia 1</span>
+        <span id="health">❤️ 100</span>
+        <span id="message">Explore o mundo!</span>
+      </div>
+    </header>
+
+    <main>
+      <canvas id="canvas"></canvas>
+
+      <div id="hotbar"></div>
+
+      <div id="help">
+        A/D ou ←/→: andar | W ou Espaço: pular<br>
+        Clique: minerar | Botão direito: construir<br>
+        1–6: selecionar bloco
+      </div>
+    </main>
+
+    <div id="inventory">
+      <h2>🎒 Inventário</h2>
+      <div id="items"></div>
+      <button id="craft">🪓 Criar picareta (3 madeira + 2 pedra)</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
